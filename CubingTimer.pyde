@@ -5,6 +5,8 @@ timeF = 0
 def truncate(n): #taken from https://realpython.com/python-rounding/
     return float(int(n*1000))/1000
 def makeover(n):
+    if isinstance(n,str):
+        return n
     n = truncate(n)
     m = str(int(n//60))
     s = str(n%60)
@@ -154,8 +156,8 @@ class Program:
         self.BMo3 = False
         self.CAo5 = False
         self.BAo5 = False
-        self.CAo10 = False
-        self.BAo10 = False
+        self.CAo12 = False
+        self.BAo12 = False
         self.AoS = False
         self.MoS = False
         #### DUMMIES ####
@@ -178,58 +180,49 @@ class Program:
         self.ctimes = sorted(self.ttimes)
         self.rtimes = sorted(self.ttimes, reverse = True)
         ctimes = self.ctimes
-        ###### BUGGED? ######
-        for t in ttimes:
-            if t//100000000:
-                t = "DNF"
-        for t in ctimes:
-            if t//1000000000:
-                t = "DNF"
         if len(ttimes) > 2:
             AoT = ctimes[1:len(ttimes)-1]
-            DNF = 0
+            self.AoS = makeover(sum(AoT)/(len(AoT)))
             for i in AoT:
-                if i == "DNF":
-                    DNF += 1
-                    AoT.remove(i)
-            if len(AoT) > 2 and DNF:
-                self.AoS = makeover(sum(AoT)/(len(AoT))) + " DNF" + str(DNF)
-            elif not len(AoT):
-                self.AoS = "DNF" + str(DNF-1)
-            elif not DNF:
-                self.AoS = makeover(sum(AoT)/(len(AoT)))
+                if int(i) >= 1000000000:
+                    self.AoS = "DNF"
         else:
             self.AoS = False
         if len(ttimes):
             MoT = ctimes[:len(ttimes)]
-            DNF = 0
+            self.MoS = makeover(sum(MoT)/(len(MoT)))
             for i in MoT:
-                if i == "DNF":
-                    DNF += 1
-                    MoT.remove(i)
-            if len(MoT) and DNF:
-                self.MoS = makeover(sum(MoT)/(len(MoT))) + " DNF" + str(DNF)
-            elif not len(MoT):
-                self.MoS = "DNF" + str(DNF)
-            elif not DNF:
-                self.MoS = makeover(sum(MoT)/(len(MoT)))
+                if int(i) >= 1000000000:
+                    self.MoS = "DNF"
         else:
             self.MoS = False
         if len(ttimes) > 9:
-            self.CAo10 = makeover(sum(sorted(ttimes[:10])[1:9])/8)
-            self.CAo5 = makeover(sum(sorted(ttimes[:5])[1:4])/3)
-            self.CMo3 = makeover(sum(ttimes[:3])/3)
-            self.BAo10 = makeover(sum(ctimes[1:9])/8)
-            self.BAo5 = makeover(sum(ctimes[1:4])/3)
-            self.BMo3 = makeover(sum(ctimes[:3])/3)
-        elif len(ttimes) > 4:
-            self.CAo5 = makeover(sum(sorted(ttimes[:5])[1:4])/3)
-            self.CMo3 = makeover(sum(ttimes[:3])/3)
-            self.BAo5 = makeover(sum(ctimes[1:4])/3)
-            self.BMo3 = makeover(sum(ctimes[:3])/3)
-        elif len(ttimes) > 2:
-            self.CMo3 = makeover(sum(ttimes[:3])/3)
-            self.BMo3 = makeover(sum(ctimes[:3])/3)
+            self.CAo12 = sum(sorted(ttimes[:12])[1:11])/8
+            self.BAo12 = sum(ctimes[1:11])/8
+            if self.CAo12 >= 1000000000/8:
+                self.CAo12 = "DNF"
+            if self.BAo12 >= 1000000000/8:
+                self.BAo12 = "DNF"
+            self.CAo12 = makeover(self.CAo12)
+            self.BAo12 = makeover(self.BAo12)
+        if len(ttimes) > 4:
+            self.CAo5 = sum(sorted(ttimes[:5])[1:4])/3
+            self.BAo5 = sum(ctimes[1:4])/3
+            if self.CAo5 >= 1000000000/3:
+                self.CAo5 = "DNF"
+            if self.BAo5 >= 1000000000/3:
+                self.BAo5 = "DNF"
+            self.CAo5 = makeover(self.CAo5)
+            self.BAo5 = makeover(self.BAo5)
+        if len(ttimes) > 2:
+            self.CMo3 = sum(ttimes[:3])/3
+            self.BMo3 = sum(ctimes[:3])/3
+            if self.CMo3 >= 1000000000/3:
+                self.CMo3 = "DNF"
+            if self.BMo3 >= 1000000000/3:
+                self.BMo3 = "DNF"
+            self.CMo3 = makeover(self.CMo3)
+            self.BMo3 = makeover(self.BMo3)
         for t in self.times[self.cube-2]:
             t.update()
     def display(self):
@@ -252,8 +245,8 @@ class Program:
                         text("Current Ao5: "+str(self.CAo5),952,260)
                         text("Best Ao5: "+str(self.BAo5),969,280)
                     if len(self.times[self.cube-2]) > 9:
-                        text("Current Ao10: "+str(self.CAo10),946,300)
-                        text("Best Ao10: "+str(self.BAo10),963,320)
+                        text("Current Ao12: "+str(self.CAo12),946,300)
+                        text("Best Ao12: "+str(self.BAo12),963,320)
                 s = 50
                 g = 24
                 if self.blind:
